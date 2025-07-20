@@ -1,3 +1,4 @@
+
 package com.example.coindecoback.controller;
 
 
@@ -52,4 +53,3 @@ public class AdminController {
         return Map.of("message", "Administrateur supprimé avec succès");
     }
 }
-

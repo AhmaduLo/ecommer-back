@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -17,6 +19,10 @@ public class JwtUtils {
     // ✅ Clé d’au moins 64 caractères pour HS512
     @Value("${jwt.secret}")
     private String SECRET_KEY;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    }
     private final long jwtExpirationMs = 86400000; // 24h
 
 
@@ -27,7 +33,7 @@ public class JwtUtils {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -38,7 +44,9 @@ public class JwtUtils {
 
     // 🔓 Récupère le rôle depuis le token
     public String getRoleFromJwt(String token) {
-        return getClaimsFromToken(token).get("role", String.class);
+        Claims claims = getClaimsFromToken(token);
+        String role = claims.get("role", String.class);
+        return role;
     }
 
     // ✅ Vérifie la validité du token
@@ -55,7 +63,7 @@ public class JwtUtils {
     // ⚙️ Méthode utilitaire pour parser le token (corrigée)
     private Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

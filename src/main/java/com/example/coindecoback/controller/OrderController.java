@@ -2,6 +2,7 @@ package com.example.coindecoback.controller;
 
 
 import com.example.coindecoback.entity.Order;
+import com.example.coindecoback.entity.OrderStatus;
 import com.example.coindecoback.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +28,7 @@ public class OrderController {
                 .userEmail(dto.getUserEmail())
                 .address(dto.getAddress())
                 .productIds(dto.getProductIds())
-                .status("en attente")
+                .status(OrderStatus.EN_ATTENTE)
                 .createdAt(LocalDateTime.now())
                 .build();
         return orderService.createOrder(order);

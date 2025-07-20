@@ -23,9 +23,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
@@ -38,30 +36,29 @@ public class JwtFilter extends OncePerRequestFilter {
                     String email = jwtUtils.getEmailFromJwt(token);
                     String role = jwtUtils.getRoleFromJwt(token);
 
-                    // 🛡 Ajoute le rôle à la liste des autorités
-                    List<GrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_" + role)
-                    );
+                    //  Ajoute le rôle à la liste des autorités
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                     // Vérifie si déjà authentifié dans le contexte
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(email, null, authorities);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                        authentication.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request)
-                        );
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
                     }
+
                 }
             } catch (Exception e) {
                 System.out.println("Erreur de validation du token JWT : " + e.getMessage());
                 // (optionnel) tu peux renvoyer une réponse 401 ici
             }
+
         }
 
-        // ⏭ Passe au filtre suivant
+        //  Passe au filtre suivant
         filterChain.doFilter(request, response);
     }
 }

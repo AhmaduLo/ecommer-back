@@ -1,6 +1,7 @@
 package com.example.coindecoback.service;
 
 import com.example.coindecoback.entity.Order;
+import com.example.coindecoback.entity.OrderStatus;
 import com.example.coindecoback.repository.OrderRepository;
 import com.example.coindecoback.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class OrderService {
     // Enregistrer une nouvelle commande
     public Order createOrder(Order order) {
         order.setCreatedAt(LocalDateTime.now());
-        order.setStatus("en attente"); // statut par défaut
+        order.setStatus(OrderStatus.EN_COURS);// statut par défaut
 
         double total = productRepository.findAllById(order.getProductIds())
                 .stream()
@@ -45,8 +46,29 @@ public class OrderService {
     // Mettre à jour le statut d’une commande
     public Order updateOrderStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id).orElseThrow();
-        order.setStatus(newStatus);
+        OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
+        OrderStatus currentStatus = order.getStatus();
+        OrderStatus requestedStatus = OrderStatus.valueOf(newStatus.toUpperCase());
+
+
+        // 🚫 Bloquer les régressions
+        if (currentStatus == OrderStatus.VALIDÉ && requestedStatus != OrderStatus.VALIDÉ) {
+            throw new IllegalStateException("Impossible de modifier une commande déjà validée.");
+        }
+
+        if (currentStatus == OrderStatus.EN_ATTENTE && requestedStatus == OrderStatus.EN_COURS) {
+            throw new IllegalStateException("Impossible de revenir à EN_COURS après traitement.");
+        }
+
+        // ✅ Ajouter la date si la commande est validée
+        if (requestedStatus == OrderStatus.VALIDÉ && order.getValidatedAt() == null) {
+            order.setValidatedAt(LocalDateTime.now());
+        }
+
+        order.setStatus(status);
         return orderRepository.save(order);
+
+
     }
 
 

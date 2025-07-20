@@ -26,7 +26,11 @@ public class Order {
     private List<Long> productIds;
 
     private Double totalPrice;
-    private String status; // ex: "en attente", "envoyé"
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime validatedAt;
 }
