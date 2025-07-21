@@ -1,5 +1,6 @@
 package com.example.coindecoback.jwt;
 
+import com.example.coindecoback.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -27,10 +27,10 @@ public class JwtUtils {
 
 
     // 🔐 Génère un token JWT avec email et rôle
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, Role role) {
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -45,8 +45,9 @@ public class JwtUtils {
     // 🔓 Récupère le rôle depuis le token
     public String getRoleFromJwt(String token) {
         Claims claims = getClaimsFromToken(token);
-        String role = claims.get("role", String.class);
-        return role;
+        String roleName = claims.get("role", String.class);
+        System.out.println("role: " + roleName);
+        return String.valueOf(Role.valueOf(roleName));
     }
 
     // ✅ Vérifie la validité du token

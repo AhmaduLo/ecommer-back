@@ -2,6 +2,7 @@ package com.example.coindecoback.service;
 
 
 import com.example.coindecoback.entity.AdminUser;
+import com.example.coindecoback.entity.Role;
 import com.example.coindecoback.repository.AdminUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +24,7 @@ public class AdminService {
         AdminUser admin = AdminUser.builder()
                 .email(email)
                 .passwordHash(passwordEncoder.encode(plainPassword))
-                .role("ADMIN")
+                .role(Role.valueOf("ADMIN"))
                 .build();
         return adminUserRepository.save(admin);
     }

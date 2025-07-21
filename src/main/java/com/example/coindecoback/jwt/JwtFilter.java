@@ -1,7 +1,9 @@
 package com.example.coindecoback.jwt;
 
+import com.example.coindecoback.entity.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,43 +24,49 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    // ✅ Récupère le token depuis le cookie "jwt"
+    private String extractTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        // 🔐 Récupère le token JWT depuis le cookie
+        String token = extractTokenFromCookies(request);
 
-        // 🔎 Vérifie si le header contient un token Bearer
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // Enlève "Bearer "
-
+        if (token != null) {
             try {
                 if (jwtUtils.validateJwt(token)) {
                     String email = jwtUtils.getEmailFromJwt(token);
-                    String role = jwtUtils.getRoleFromJwt(token);
+                    Role role = Role.valueOf(jwtUtils.getRoleFromJwt(token)); // déjà Enum
 
-                    //  Ajoute le rôle à la liste des autorités
-                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    // 🔐 Création de l'autorité Spring Security
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
-                    // Vérifie si déjà authentifié dans le contexte
+                    // ✅ Si pas déjà authentifié
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
 
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-
                     }
-
                 }
             } catch (Exception e) {
-                System.out.println("Erreur de validation du token JWT : " + e.getMessage());
-                // (optionnel) tu peux renvoyer une réponse 401 ici
+                System.out.println("❌ Erreur de validation du token JWT : " + e.getMessage());
+                // Tu peux aussi faire response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
             }
-
         }
 
-        //  Passe au filtre suivant
+        // ▶️ Passe au filtre suivant
         filterChain.doFilter(request, response);
     }
 }
