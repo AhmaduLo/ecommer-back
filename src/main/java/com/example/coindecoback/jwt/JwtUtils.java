@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -44,11 +43,11 @@ public class JwtUtils {
     }
 
     // 🔓 Récupère le rôle depuis le token
-    public Role getRoleFromJwt(String token) {
+    public String getRoleFromJwt(String token) {
         Claims claims = getClaimsFromToken(token);
         String roleName = claims.get("role", String.class);
         System.out.println("role: " + roleName);
-        return Role.valueOf(roleName);
+        return String.valueOf(Role.valueOf(roleName));
     }
 
     // ✅ Vérifie la validité du token
