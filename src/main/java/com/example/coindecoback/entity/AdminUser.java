@@ -1,9 +1,6 @@
 package com.example.coindecoback.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 
@@ -19,5 +16,6 @@ public class AdminUser {
 
     private String email;
     private String passwordHash;
-    private String role = "ADMIN";
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

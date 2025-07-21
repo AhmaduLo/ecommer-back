@@ -24,11 +24,11 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/admin/login",
-                                "/api/admin/register",
-                                "/api/products",
-                                "/api/orders",
-                                "/api/orders/user"
+                                "/api/products"
+//                                "/api/orders",
+//                                "/api/orders/user"
+//                                "/api/admin/login",
+//                                "/api/admin/register",
                         ).permitAll() // accès libre
                         .anyRequest().authenticated() // toutes les autres routes nécessitent un token
                 );

@@ -1,5 +1,6 @@
 package com.example.coindecoback.jwt;
 
+import com.example.coindecoback.entity.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,10 +35,12 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 if (jwtUtils.validateJwt(token)) {
                     String email = jwtUtils.getEmailFromJwt(token);
-                    String role = jwtUtils.getRoleFromJwt(token);
+                    Role role = Role.valueOf(String.valueOf(jwtUtils.getRoleFromJwt(token)));
 
                     //  Ajoute le rôle à la liste des autorités
-                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+
 
                     // Vérifie si déjà authentifié dans le contexte
                     if (SecurityContextHolder.getContext().getAuthentication() == null) {
