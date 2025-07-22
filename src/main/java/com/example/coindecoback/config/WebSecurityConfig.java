@@ -32,7 +32,9 @@ public class WebSecurityConfig {
                                 "/api/admin/login",
                                "/api/admin/register",
                                 "api/orders/track",
-                                "api/products/search"
+                                "api/products/search",
+                                "/api/payment/create",
+                                "api/orders/confirm"
                         ).permitAll() // accès libre
                         .anyRequest().authenticated() // toutes les autres routes nécessitent un token
                 );

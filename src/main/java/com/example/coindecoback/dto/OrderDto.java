@@ -17,5 +17,6 @@ public class OrderDto {
     private LocalDateTime createdAt;
     private LocalDateTime validatedAt;
     private String accessToken;
+    private String paymentIntentId;
 }
 

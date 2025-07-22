@@ -37,4 +37,6 @@ public class Order {
     @Column(unique = true)
     private String accessToken;
 
+    private String paymentIntentId; // ID Stripe du paiement
+
 }
