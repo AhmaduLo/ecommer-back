@@ -16,5 +16,6 @@ public class OrderDto {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime validatedAt;
+    private String accessToken;
 }
 

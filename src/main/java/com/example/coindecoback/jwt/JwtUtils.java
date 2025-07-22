@@ -35,7 +35,9 @@ public class JwtUtils {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+
     }
+
 
     // 📩 Récupère l'email (subject) depuis le token
     public String getEmailFromJwt(String token) {

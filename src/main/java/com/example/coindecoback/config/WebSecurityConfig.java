@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
     @Autowired
@@ -25,10 +27,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/products",
-//                                "/api/orders",
-//                                "/api/orders/user"
+                                "/api/orders",
+                                "/api/orders/user",
                                 "/api/admin/login",
-                               "/api/admin/register"
+                               "/api/admin/register",
+                                "api/orders/track",
+                                "api/products/search"
                         ).permitAll() // accès libre
                         .anyRequest().authenticated() // toutes les autres routes nécessitent un token
                 );

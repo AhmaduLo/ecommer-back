@@ -24,7 +24,7 @@ public class AdminService {
         AdminUser admin = AdminUser.builder()
                 .email(email)
                 .passwordHash(passwordEncoder.encode(plainPassword))
-                .role(Role.valueOf("ADMIN"))
+                .role(Role.valueOf("CLIENT"))
                 .build();
         return adminUserRepository.save(admin);
     }
