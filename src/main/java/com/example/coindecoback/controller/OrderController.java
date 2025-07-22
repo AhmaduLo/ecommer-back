@@ -5,9 +5,11 @@ import com.example.coindecoback.entity.Order;
 import com.example.coindecoback.entity.OrderStatus;
 import com.example.coindecoback.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.example.coindecoback.dto.OrderDto;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,10 +44,16 @@ public class OrderController {
     }
 
     // Obtenir les commandes d’un client
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user")
     public List<Order> getOrdersByEmail(@RequestParam String email) {
         return orderService.getOrdersByEmail(email);
+    }
+
+    // ✅ Suivi public d'une commande via accessToken
+    @GetMapping("/track")
+    public Order getOrderByAccessToken(@RequestParam String token) {
+        return orderService.findByAccessToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Commande introuvable"));
     }
 
     // Modifier le statut d'une commande (admin)

@@ -1,11 +1,9 @@
 package com.example.coindecoback.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 
 
 @Entity
@@ -21,6 +19,16 @@ public class Product {
     private String name;
     private String description;
     private Double price;
-    private String imageUrl;
     private Integer stock;
+
+    private String category;
+
+    // 🧠 Champs SEO
+    private String seoTitle;
+    private String shortDescription;
+    private String slug;
+
+    // 🔗 Relation avec ProductImage
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images;
 }

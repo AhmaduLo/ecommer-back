@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -22,12 +24,10 @@ public class OrderService {
     // Enregistrer une nouvelle commande
     public Order createOrder(Order order) {
         order.setCreatedAt(LocalDateTime.now());
+        order.setAccessToken(UUID.randomUUID().toString()); //  lien de suivi unique
         order.setStatus(OrderStatus.EN_COURS);// statut par défaut
 
-        double total = productRepository.findAllById(order.getProductIds())
-                .stream()
-                .mapToDouble(product -> product.getPrice())
-                .sum();
+        double total = productRepository.findAllById(order.getProductIds()).stream().mapToDouble(product -> product.getPrice()).sum();
 
         order.setTotalPrice(total);
         return orderRepository.save(order);
@@ -69,6 +69,11 @@ public class OrderService {
         return orderRepository.save(order);
 
 
+    }
+
+    // ✅ Méthode de suivi public
+    public Optional<Order> findByAccessToken(String token) {
+        return orderRepository.findByAccessToken(token);
     }
 
 

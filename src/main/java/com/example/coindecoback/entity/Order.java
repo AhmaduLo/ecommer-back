@@ -33,4 +33,8 @@ public class Order {
     private LocalDateTime createdAt;
 
     private LocalDateTime validatedAt;
+
+    @Column(unique = true)
+    private String accessToken;
+
 }
