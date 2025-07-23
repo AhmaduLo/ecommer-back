@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -22,19 +23,19 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
+
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/products",
+                                "/api/products/search",
                                 "/api/orders",
+                                "/api/orders/confirm",
                                 "/api/orders/user",
+                                "/api/orders/track",
                                 "/api/admin/login",
-                               "/api/admin/register",
-                                "api/orders/track",
-                                "api/products/search",
-                                "/api/payment/create",
-                                "api/orders/confirm"
+                                "/api/admin/register",
+                                "/api/payment/create"
                         ).permitAll() // accès libre
                         .anyRequest().authenticated() // toutes les autres routes nécessitent un token
                 );
