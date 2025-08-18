@@ -20,17 +20,42 @@ public class OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+    private List<Long> productIds;
 
     // Enregistrer une nouvelle commande
     public Order createOrder(Order order) {
         order.setCreatedAt(LocalDateTime.now());
-        order.setAccessToken(UUID.randomUUID().toString()); //  lien de suivi unique
-        order.setStatus(OrderStatus.EN_COURS);// statut par défaut
 
-        double total = productRepository.findAllById(order.getProductIds()).stream().mapToDouble(product -> product.getPrice()).sum();
+        // Vérifie si un panier "EN_COURS" existe déjà pour le même utilisateur
+        List<Order> existingOrders = orderRepository.findByFullNameAndUserEmailAndAddressAndStatus(
+                order.getFullName(),
+                order.getUserEmail(),
+                order.getAddress(),
+                OrderStatus.EN_ATTENTE
+        );
 
+        if (!existingOrders.isEmpty()) {
+            Order panier = existingOrders.get(0); // Prends le premier panier existant
+
+            // Ajouter les nouveaux produits
+            panier.getProductIds().addAll(order.getProductIds());
+
+            // Recalcule le total
+            double total = productRepository.findAllById(panier.getProductIds()).stream()
+                    .mapToDouble(product -> product.getPrice()).sum();
+            panier.setTotalPrice(total);
+
+            return orderRepository.save(panier);
+        }
+
+        // Nouveau panier sinon
+        order.setAccessToken(UUID.randomUUID().toString());
+        order.setStatus(OrderStatus.EN_ATTENTE);
+        double total = productRepository.findAllById(order.getProductIds()).stream()
+                .mapToDouble(product -> product.getPrice()).sum();
         order.setTotalPrice(total);
         return orderRepository.save(order);
+
     }
 
     // Récupérer toutes les commandes
@@ -69,6 +94,44 @@ public class OrderService {
         return orderRepository.save(order);
 
 
+    }
+
+    public String removeProductFromOrder(Long orderId, Long productId, String email) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Commande introuvable."));
+
+        // Vérifie que l'utilisateur est bien le propriétaire
+        if (!order.getUserEmail().equals(email)) {
+            throw new SecurityException("Vous n’avez pas le droit de modifier cette commande.");
+        }
+
+        // Vérifie que la commande est encore modifiable
+        if (order.getStatus() != OrderStatus.EN_ATTENTE) {
+            throw new IllegalStateException("Impossible de modifier une commande déjà en cours ou validée.");
+        }
+
+        // Retire le produit de la liste s'il existe
+        boolean removed = order.getProductIds().remove(productId);
+        if (!removed) {
+            throw new IllegalArgumentException("Le produit n’existe pas dans cette commande.");
+        }
+
+        // Si la liste devient vide, on supprime la commande
+        if (order.getProductIds() == null || order.getProductIds().isEmpty()) {
+            orderRepository.delete(order);
+            return "Commande supprimée car aucun produit restant.";
+        }
+
+        // Recalculer le prix total
+        double total = productRepository.findAllById(order.getProductIds())
+                .stream()
+                .mapToDouble(product -> product.getPrice())
+                .sum();
+        order.setTotalPrice(total);
+
+        orderRepository.save(order);
+
+        return "Produit supprimé de la commande.";
     }
 
     // ✅ Méthode de suivi public

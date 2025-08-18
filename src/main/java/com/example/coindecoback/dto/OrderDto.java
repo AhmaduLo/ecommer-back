@@ -18,5 +18,7 @@ public class OrderDto {
     private LocalDateTime validatedAt;
     private String accessToken;
     private String paymentIntentId;
+    private String phoneNumber;
+
 }
 

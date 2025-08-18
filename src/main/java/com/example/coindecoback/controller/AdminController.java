@@ -89,7 +89,7 @@ public class AdminController {
     @PostMapping("/register")
     public Map<String, String> register(@RequestBody AdminLoginDto dto) {
         adminService.createAdmin(dto.getEmail(), dto.getPassword());
-        return Map.of("message", "Admin créé avec succès");
+        return Map.of("message", "créé avec succès");
     }
 
     // ✅ Suppression d’un administrateur par son ID
