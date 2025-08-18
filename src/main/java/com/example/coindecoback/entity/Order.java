@@ -22,6 +22,9 @@ public class Order {
 
     private String address;
 
+    @Column(length = 20)
+    private String phoneNumber;
+
     @ElementCollection
     private List<Long> productIds;
 

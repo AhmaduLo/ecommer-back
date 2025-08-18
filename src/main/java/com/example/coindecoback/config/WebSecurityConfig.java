@@ -30,6 +30,7 @@ public class WebSecurityConfig {
                                 "/api/products",
                                 "/api/products/search",
                                 "/api/orders",
+                                "/api/orders/*/product/*",
                                 "/api/orders/confirm",
                                 "/api/orders/user",
                                 "/api/orders/track",
