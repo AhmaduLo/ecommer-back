@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "*") // Pour autoriser Angular à accéder à l'API
 public class ProductController {
 
     @Autowired
