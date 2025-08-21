@@ -42,4 +42,7 @@ public class Order {
 
     private String paymentIntentId; // ID Stripe du paiement
 
+    @ElementCollection
+    @CollectionTable(name = "order_items", joinColumns = @JoinColumn(name = "order_id"))
+    private List<OrderItem> items;
 }

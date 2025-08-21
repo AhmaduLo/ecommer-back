@@ -1,6 +1,7 @@
 package com.example.coindecoback.service;
 
 import com.example.coindecoback.entity.Order;
+import com.example.coindecoback.entity.OrderItem;
 import com.example.coindecoback.entity.OrderStatus;
 import com.example.coindecoback.repository.OrderRepository;
 import com.example.coindecoback.repository.ProductRepository;
@@ -26,7 +27,7 @@ public class OrderService {
     public Order createOrder(Order order) {
         order.setCreatedAt(LocalDateTime.now());
 
-        // Vérifie si un panier "EN_COURS" existe déjà pour le même utilisateur
+        // Vérifie si un panier EN_ATTENTE existe pour ce client
         List<Order> existingOrders = orderRepository.findByFullNameAndUserEmailAndAddressAndStatus(
                 order.getFullName(),
                 order.getUserEmail(),
@@ -35,27 +36,43 @@ public class OrderService {
         );
 
         if (!existingOrders.isEmpty()) {
-            Order panier = existingOrders.get(0); // Prends le premier panier existant
+            Order panier = existingOrders.get(0);
 
-            // Ajouter les nouveaux produits
-            panier.getProductIds().addAll(order.getProductIds());
+            // Fusionne les quantités pour les produits existants
+            for (OrderItem newItem : order.getItems()) {
+                boolean found = false;
+                for (OrderItem existingItem : panier.getItems()) {
+                    if (existingItem.getProductId().equals(newItem.getProductId())) {
+                        existingItem.setQuantity(existingItem.getQuantity() + newItem.getQuantity());
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    panier.getItems().add(newItem);
+                }
+            }
 
-            // Recalcule le total
-            double total = productRepository.findAllById(panier.getProductIds()).stream()
-                    .mapToDouble(product -> product.getPrice()).sum();
+            double total = calculateTotal(panier.getItems());
             panier.setTotalPrice(total);
-
             return orderRepository.save(panier);
         }
 
-        // Nouveau panier sinon
+        // Nouveau panier
         order.setAccessToken(UUID.randomUUID().toString());
         order.setStatus(OrderStatus.EN_ATTENTE);
-        double total = productRepository.findAllById(order.getProductIds()).stream()
-                .mapToDouble(product -> product.getPrice()).sum();
+        double total = calculateTotal(order.getItems());
         order.setTotalPrice(total);
         return orderRepository.save(order);
+    }
 
+    // Méthode utilitaire pour le total
+    private double calculateTotal(List<OrderItem> items) {
+        return items.stream()
+                .mapToDouble(item -> {
+                    var product = productRepository.findById(item.getProductId()).orElseThrow();
+                    return product.getPrice() * item.getQuantity();
+                }).sum();
     }
 
     // Récupérer toutes les commandes
@@ -138,6 +155,7 @@ public class OrderService {
     public Optional<Order> findByAccessToken(String token) {
         return orderRepository.findByAccessToken(token);
     }
+
 
 
 }
