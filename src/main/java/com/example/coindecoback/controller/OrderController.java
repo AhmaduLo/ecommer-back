@@ -33,7 +33,7 @@ public class OrderController {
                 .userEmail(dto.getUserEmail())
                 .phoneNumber(dto.getPhoneNumber())
                 .address(dto.getAddress())
-                .productIds(dto.getProductIds())
+                .items(dto.getItems())
                 .status(OrderStatus.EN_ATTENTE)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -82,7 +82,7 @@ public class OrderController {
                     .fullName(dto.getFullName())
                     .userEmail(dto.getUserEmail())
                     .address(dto.getAddress())
-                    .productIds(dto.getProductIds())
+                    .items(dto.getItems())
                     .phoneNumber(dto.getPhoneNumber())
                     .totalPrice(dto.getTotalPrice())
                     .paymentIntentId(dto.getPaymentIntentId())
