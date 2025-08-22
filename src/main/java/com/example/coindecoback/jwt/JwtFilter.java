@@ -24,6 +24,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+
     // ✅ Récupère le token depuis le cookie "jwt"
     private String extractTokenFromCookies(HttpServletRequest request) {
         if (request.getCookies() != null) {
@@ -36,8 +37,10 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
 
         // Récupère le token JWT depuis le cookie
         String token = extractTokenFromCookies(request);

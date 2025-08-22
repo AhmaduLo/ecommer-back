@@ -27,50 +27,63 @@ public class OrderService {
     public Order createOrder(Order order) {
         order.setCreatedAt(LocalDateTime.now());
 
-        // Vérifie si un panier EN_ATTENTE existe pour ce client
-        List<Order> existingOrders = orderRepository.findByFullNameAndUserEmailAndAddressAndStatus(
-                order.getFullName(),
-                order.getUserEmail(),
-                order.getAddress(),
-                OrderStatus.EN_ATTENTE
-        );
+        // Si la commande est déjà VALIDÉE, ne pas fusionner avec un panier EN_ATTENTE
+        if (order.getStatus() != OrderStatus.VALIDÉ) {
+            // Vérifie si un panier EN_ATTENTE existe pour ce client
+            List<Order> existingOrders = orderRepository.findByFullNameAndUserEmailAndAddressAndStatus(
+                    order.getFullName(),
+                    order.getUserEmail(),
+                    order.getAddress(),
+                    OrderStatus.EN_ATTENTE
+            );
 
-        if (!existingOrders.isEmpty()) {
-            Order panier = existingOrders.get(0);
+            if (!existingOrders.isEmpty()) {
+                Order panier = existingOrders.get(0);
 
-            // Fusionne les quantités pour les produits existants
-            for (OrderItem newItem : order.getItems()) {
-                boolean found = false;
-                for (OrderItem existingItem : panier.getItems()) {
-                    if (existingItem.getProductId().equals(newItem.getProductId())) {
-                        existingItem.setQuantity(existingItem.getQuantity() + newItem.getQuantity());
-                        found = true;
-                        break;
+                // Fusionne les quantités pour les produits existants
+                for (OrderItem newItem : order.getItems()) {
+                    boolean found = false;
+                    for (OrderItem existingItem : panier.getItems()) {
+                        if (existingItem.getProductId().equals(newItem.getProductId())) {
+                            existingItem.setQuantity(existingItem.getQuantity() + newItem.getQuantity());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        panier.getItems().add(newItem);
                     }
                 }
-                if (!found) {
-                    panier.getItems().add(newItem);
-                }
-            }
 
-            double total = calculateTotal(panier.getItems());
-            panier.setTotalPrice(total);
-            return orderRepository.save(panier);
+                double total = calculateTotal(panier.getItems());
+                panier.setTotalPrice(total);
+                // Populer productIds à partir des items
+                populateProductIds(panier);
+                return orderRepository.save(panier);
+            }
         }
 
-        // Nouveau panier
+        // Nouveau panier ou commande validée
         order.setAccessToken(UUID.randomUUID().toString());
-        order.setStatus(OrderStatus.EN_ATTENTE);
+        if (order.getStatus() == null) {
+            order.setStatus(OrderStatus.EN_ATTENTE);
+        }
         double total = calculateTotal(order.getItems());
         order.setTotalPrice(total);
+        // Populer productIds à partir des items
+        populateProductIds(order);
         return orderRepository.save(order);
     }
 
     // Méthode utilitaire pour le total
     private double calculateTotal(List<OrderItem> items) {
+        if (items == null || items.isEmpty()) {
+            return 0.0;
+        }
         return items.stream()
                 .mapToDouble(item -> {
-                    var product = productRepository.findById(item.getProductId()).orElseThrow();
+                    var product = productRepository.findById(item.getProductId())
+                            .orElseThrow(() -> new IllegalArgumentException("Produit introuvable avec l'ID: " + item.getProductId()));
                     return product.getPrice() * item.getQuantity();
                 }).sum();
     }
@@ -156,6 +169,19 @@ public class OrderService {
         return orderRepository.findByAccessToken(token);
     }
 
+    // ✅ Méthode pour mettre à jour une commande existante
+    public Order updateOrder(Order order) {
+        return orderRepository.save(order);
+    }
 
+    // Méthode utilitaire pour populer productIds à partir des items
+    private void populateProductIds(Order order) {
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            List<Long> productIds = order.getItems().stream()
+                    .map(OrderItem::getProductId)
+                    .collect(java.util.stream.Collectors.toList());
+            order.setProductIds(productIds);
+        }
+    }
 
 }

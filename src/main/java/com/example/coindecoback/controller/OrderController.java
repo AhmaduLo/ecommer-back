@@ -88,6 +88,7 @@ public class OrderController {
                     .paymentIntentId(dto.getPaymentIntentId())
                     .status(OrderStatus.VALIDÉ)
                     .createdAt(LocalDateTime.now())
+                    .validatedAt(LocalDateTime.now())
                     .build();
 
             return orderService.createOrder(order);

@@ -31,11 +31,11 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/products",
                                 "/api/products/search",
-                                "/api/orders",
-                                "/api/orders/*/product/*",
                                 "/api/orders/confirm",
                                 "/api/orders/user",
                                 "/api/orders/track",
+                                "/api/orders/*/product/*",
+                                "/api/orders",
                                 "/api/admin/login",
                                 "/api/admin/register",
                                 "/api/payment/create"
